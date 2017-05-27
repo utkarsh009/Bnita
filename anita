@@ -1,0 +1,142 @@
+#!/usr/pkg/bin/python2.4
+
+import sys
+import re
+import anita
+import os
+import optparse
+
+class Usage(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+def main(argv = None):
+    if argv is None:
+        argv = sys.argv
+
+    parser = optparse.OptionParser(
+        usage = "usage: %prog [options] install|boot|interact distribution")
+    parser.add_option("--workdir",
+		      help="store work files in DIR", metavar="DIR")
+    parser.add_option("--vmm",
+		      help="use VMM (qemu or xen) as the virtual machine monitor",
+		      metavar="VMM", default="qemu")
+    parser.add_option("--vmm-args",
+		      help="pass ARGS as extra arguments to virtual machine monitor",
+		      metavar="ARGS", default="")
+    # Deprecated
+    parser.add_option("--qemu-args",
+		      help=optparse.SUPPRESS_HELP, default="")
+    parser.add_option("--disk-size",
+		      help="use a virtual disk of SIZE bytes (k/M/G/T suffix accepted)",
+		      metavar="SIZE")
+    parser.add_option("--memory-size",
+		      help="use a virtual RAM size of SIZE bytes (k/M/G/T suffix accepted)",
+		      metavar="SIZE")
+    parser.add_option("--run",
+		      help="run COMMAND on the virtual machine after boot", metavar="COMMAND")
+    parser.add_option("--sets",
+		      help="install the distribution SETS (e.g., base,games)",
+		      metavar="SETS")
+    parser.add_option("--test-timeout",
+		      help="allow TIMEOUT seconds for the ATF tests", metavar="TIMEOUT",
+                      type="int", default=28800)
+    parser.add_option("--run-timeout",
+		      help="allow TIMEOUT seconds for command run using the --run option", metavar="TIMEOUT",
+                      type="int", default=3600)
+    parser.add_option("--persist",
+		      help="make changes to disk contents persistent", action="store_true")
+    parser.add_option("--boot-from",
+		      help="boot from MEDIA (floppy/cdrom)", metavar="MEDIA")
+    parser.add_option("--structured-log", action="store_true",
+		      help="log console traffic in a structured format, to stdout")
+    parser.add_option("--structured-log-file", metavar="FILE",
+		      help="log console traffic in a structured format, to FILE")
+    parser.add_option("--no-install", action="store_true",
+		      help="in boot/test/interact mode, assume system is already installed")
+    parser.add_option("--version", action="store_true",
+		      help="print the anita version number and exit")
+
+    (options, args) = parser.parse_args()
+
+    if options.version:
+        print anita.__version__
+	sys.exit(0)
+
+    if len(args) < 2:
+	raise Usage("not enough arguments")
+
+    distarg = args[1]
+
+    vmm_args = options.vmm_args.split() + options.qemu_args.split()
+
+    if options.sets:
+        sets = options.sets.split(",")
+    else:
+        sets = None
+
+    if re.search(r'\.iso$', distarg):
+        dist = anita.ISO(distarg, sets = sets)
+    elif re.match(r'/', distarg):
+	if not re.search(r'/$', distarg):
+	    raise Usage("distribution directory should end in a slash")
+	dist = anita.LocalDirectory(distarg, sets = sets)
+    elif re.match(r'[a-z0-9\.0-]+:', distarg):
+	if not re.search(r'/$', distarg):
+	    raise Usage("distribution URL should end in a slash")
+	dist = anita.URL(distarg, sets = sets)
+    else:
+	raise Usage("expected distribution URL or directory, got " + distarg)
+
+    a = anita.Anita(dist,
+        workdir = options.workdir,
+        vmm = options.vmm,
+	vmm_args = vmm_args,
+        disk_size = options.disk_size,
+	memory_size = options.memory_size,
+	persist = options.persist,
+	boot_from = options.boot_from,
+	structured_log = options.structured_log,
+	structured_log_file = options.structured_log_file,
+	no_install = options.no_install
+	)
+
+    def maybe_run_command(a):
+        if options.run:
+	    return a.shell_cmd(options.run, options.run_timeout)
+	else:
+	    return 0
+
+    status = 0
+    mode = args[0]
+
+    if mode != 'print-workdir':
+        print "This is anita version", anita.__version__
+
+    if mode == 'install':
+	a.install()
+    elif mode == 'boot':
+	child = a.boot()
+	status = maybe_run_command(a)
+	a.halt()
+    elif mode == 'interact':
+        child = a.boot()
+	status = maybe_run_command(a)
+	anita.console_interaction(child)
+    elif mode == 'test':
+	status = a.run_tests(timeout = options.test_timeout)
+	a.halt()
+    elif mode == 'print-workdir':
+        print a.workdir
+    else:
+	raise Usage("unknown mode: " + mode)
+    return status
+
+if __name__ == "__main__":
+    try:
+        status = main()
+	sys.exit(status)
+    except Usage, err:
+        print >>sys.stderr, "%s: %s" % (os.path.basename(sys.argv[0]), err.msg)
+        print >>sys.stderr, "for help use --help"
+        sys.exit(1)
