@@ -5,5 +5,5 @@ or, as a step up from the previous version, hence, A -> B
 Also, Bnita (pronounced Bee-neeta) is my mom's name :)
 
 # TODO:
-1. Adding support for creating an instance of class Bnita in the anita script.
+1. <del>Adding support for creating an instance of class Bnita in the anita script.</del>
 2. Adding support for running tests.
