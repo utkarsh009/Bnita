@@ -6,4 +6,5 @@ Also, Bnita (pronounced Bee-neeta) is my mom's name :)
 
 # TODO:
 1. <del>Adding support for creating an instance of class Bnita in the anita script.</del>
-2. Adding support for running tests.
+2. <del>Adding support for running tests.</del>
+3. Add extra features if required.
