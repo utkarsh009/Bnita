@@ -14,7 +14,7 @@ class Bnita(Anita):
         return ["-d", path]
     vmm_args = []
     if self.already_installed is 0:
-        vmm_args = ["-d", gxemul_cdrom_args()]
+        vmm_args += ["-d", gxemul_cdrom_args()]
     if dist.arch() == 'pmax':
         vmm_args += ["-E 3max"]
         cd_device = 'cd0a'
