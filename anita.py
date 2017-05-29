@@ -1532,14 +1532,14 @@ class Anita:
         make_dense_image(scratch_disk_path, parse_size('%dM' % scratch_image_megs))
 	# Leave a 10% safety margin
 	max_result_size_k = scratch_image_megs * 900
-
+	scratch_disk_args = None
         if vmm_is_xen(self.vmm):
             scratch_disk_args = [self.xen_disk_arg(os.path.abspath(scratch_disk_path), 1, True)]
         elif self.vmm == 'qemu':
             scratch_disk_args = self.qemu_disk_args(os.path.abspath(scratch_disk_path), 1, True, False)
         elif self.vmm == 'noemu':
 	    scratch_disk_args = []
-        else:
+        elif scratch_disk_args is None:
             raise RuntimeError('unknown vmm')
 
         child = self.boot(scratch_disk_args)
