@@ -15,8 +15,19 @@ class Bnita(Anita):
         vmm_args += ["-E 3max"]
         cd_device = 'cd0a'
     def start_gxemul(self, vmm_args, already_installed = 0):
-        child = self.pexpect_spawn(gxemul, ["-M", str(self.memory_size()), "-d", os.path.abspath(self.wd0_path), os.path.abspath(os.path.join(self.dist.download_local_arch_dir(), "binary", "kernel", ("netbsd-INSTALL.gz", "netbsd-GENERIC.gz")[already_installed]))] + ([], vmm_args)[already_installed] + self.extra_vmm_args)
+        child = self.pexpect_spawn(gxemul, ["-M", str(self.memory_size()), "-d", os.path.abspath(self.wd0_path), os.path.abspath(os.path.join(self.dist.download_local_arch_dir(), "binary", "kernel", ("netbsd-INSTALL.gz", "netbsd-GENERIC.gz")[already_installed]))] + (vmm_args, [])[already_installed] + self.extra_vmm_args)
         self.configure_child(child)
         return child
     if self.vmm == 'gxemul':
         child = self.start_gxemul(vmm_args, already_installed)
+    def start_boot(self, vmm_args = None):
+        if vmm_args is None:
+            vmm_args = []
+        if not self.no_install:
+            self.install()
+        if self.vmm = 'gxemul':
+            child = self.start_gxemul(vmm_args)
+        else:
+            raise RuntimeError('unknown vmm %s' % vmm)
+        self.child = child
+        return child
