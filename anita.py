@@ -715,6 +715,7 @@ class Anita:
         self.extra_vmm_args = vmm_args
 
 	self.is_logged_in = False
+	scratch_disk_args = None
 
     def slog(self, message):
         slog_info(self.structured_log_f, message)
@@ -1532,7 +1533,7 @@ class Anita:
         make_dense_image(scratch_disk_path, parse_size('%dM' % scratch_image_megs))
 	# Leave a 10% safety margin
 	max_result_size_k = scratch_image_megs * 900
-	scratch_disk_args = None
+	
         if vmm_is_xen(self.vmm):
             scratch_disk_args = [self.xen_disk_arg(os.path.abspath(scratch_disk_path), 1, True)]
         elif self.vmm == 'qemu':
