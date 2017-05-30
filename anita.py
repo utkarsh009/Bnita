@@ -715,7 +715,7 @@ class Anita:
         self.extra_vmm_args = vmm_args
 
 	self.is_logged_in = False
-	scratch_disk_args = None
+	self.scratch_disk_args = None
 
     def slog(self, message):
         slog_info(self.structured_log_f, message)
@@ -1535,15 +1535,15 @@ class Anita:
 	max_result_size_k = scratch_image_megs * 900
 	
         if vmm_is_xen(self.vmm):
-            scratch_disk_args = [self.xen_disk_arg(os.path.abspath(scratch_disk_path), 1, True)]
+            self.scratch_disk_args = [self.xen_disk_arg(os.path.abspath(scratch_disk_path), 1, True)]
         elif self.vmm == 'qemu':
-            scratch_disk_args = self.qemu_disk_args(os.path.abspath(scratch_disk_path), 1, True, False)
+            self.scratch_disk_args = self.qemu_disk_args(os.path.abspath(scratch_disk_path), 1, True, False)
         elif self.vmm == 'noemu':
-	    scratch_disk_args = []
-        elif scratch_disk_args is None:
+	    self.scratch_disk_args = []
+        elif self.scratch_disk_args is None:
             raise RuntimeError('unknown vmm')
 
-        child = self.boot(scratch_disk_args)
+        child = self.boot(self.scratch_disk_args)
 	self.login()
 
         have_kyua = self.shell_cmd("grep -q 'MKKYUA.*=.*yes' /etc/release") == 0
