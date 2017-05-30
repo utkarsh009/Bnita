@@ -16,7 +16,7 @@ class Bnita(Anita):
     if self.already_installed is 0:
         vmm_args += ["-d", gxemul_cdrom_args()]
     if dist.arch() == 'pmax':
-        vmm_args += ["-E 3max"]
+        vmm_args += ["-e 3max"]
         cd_device = 'cd0a'
     def start_gxemul(self, vmm_args, already_installed = 0):
         child = self.pexpect_spawn(gxemul, ["-M", str(self.memory_size()), "-d", os.path.abspath(self.wd0_path), os.path.abspath(os.path.join(self.dist.download_local_arch_dir(), "binary", "kernel", ("netbsd-INSTALL.gz", "netbsd-GENERIC.gz")[already_installed]))] + vmm_args + self.extra_vmm_args)
