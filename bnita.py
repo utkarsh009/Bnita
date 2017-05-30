@@ -23,7 +23,7 @@ class Bnita(Anita):
         self.configure_child(child)
         return child
     if self.vmm == 'gxemul':
-        scratch_disk_args = self.gxemul_disk_args(os.path.abspath(scratch_disk_path))
+        self.scratch_disk_args = self.gxemul_disk_args(os.path.abspath(scratch_disk_path))
         child = self.start_gxemul(vmm_args, already_installed)
     def start_boot(self, vmm_args = None):
         if vmm_args is None:
