@@ -57,6 +57,7 @@ def main(argv = None):
 		      help="in boot/test/interact mode, assume system is already installed")
     parser.add_option("--version", action="store_true",
 		      help="print the anita version number and exit")
+    parser.add_option("--test", help="select whether you want kyua or ATF for testing.", type="string", default="atf")
 
     (options, args) = parser.parse_args()
 
@@ -100,7 +101,8 @@ def main(argv = None):
 	        boot_from = options.boot_from,
 	        structured_log = options.structured_log,
 	        structured_log_file = options.structured_log_file,
-	        no_install = options.no_install)
+	        no_install = options.no_install
+		test = options.test)
     elif options.vmm in ['gxemul']:   #leaving scope for adding other emulators as well
         a = bnita.Bnita(dist,
                 workdir = options.workdir,
@@ -110,7 +112,8 @@ def main(argv = None):
 	        memory_size = options.memory_size,
 	        structured_log = options.structured_log,
 	        structured_log_file = options.structured_log_file,
-	        already_installed = options.no_install)
+	        already_installed = options.no_install
+		test = options.test)
     def maybe_run_command(a):
         if options.run:
 	    return a.shell_cmd(options.run, options.run_timeout)
