@@ -1549,9 +1549,9 @@ class Anita:
 
         
         if self.test == "kyua":
-	    have_kyua = self.shell_cmd("grep -q 'MKKYUA.*=.*yes' /etc/release") == 0
-	    if have_kyua:
-	    	test_cmd = (
+	    if self.shell_cmd("grep -q 'MKKYUA.*=.*yes' /etc/release") != 0:
+		raise RuntimeError("kyua is not installed.")
+	    test_cmd = (
 		"kyua " +
 		    "--loglevel=error " +
 		    "--logfile=/tmp/tests/kyua-test.log " +
@@ -1568,8 +1568,7 @@ class Anita:
 		    "report-html " +
 		    "--store=/tmp/tests/store.db " +
 		    "--output=/tmp/tests/html; ")
-	    else:
-		raise RuntimeError("kyua is not installed.")
+		
         elif self.test == "atf":
 	    atf_aux_files = ['/usr/share/xsl/atf/tests-results.xsl',
 			     '/usr/share/xml/atf/tests-results.dtd',
