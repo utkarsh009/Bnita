@@ -656,7 +656,7 @@ class multifile(object):
 class Anita:
     def __init__(self, dist, workdir = None, vmm = 'qemu', vmm_args = None,
         disk_size = None, memory_size = None, persist = False, boot_from = None,
-	structured_log = None, structured_log_file = None, no_install = False):
+	structured_log = None, structured_log_file = None, no_install = False, test = 'atf'):
         self.dist = dist
         if workdir:
             self.workdir = workdir
@@ -716,6 +716,7 @@ class Anita:
 
 	self.is_logged_in = False
 	self.scratch_disk_args = None
+	self.test = test
 
     def slog(self, message):
         slog_info(self.structured_log_f, message)
@@ -1547,7 +1548,7 @@ class Anita:
 	self.login()
 
         have_kyua = self.shell_cmd("grep -q 'MKKYUA.*=.*yes' /etc/release") == 0
-        if have_kyua:
+        if have_kyua and self.test == "kyua":
 	    test_cmd = (
 		"kyua " +
 		    "--loglevel=error " +
@@ -1565,7 +1566,7 @@ class Anita:
 		    "report-html " +
 		    "--store=/tmp/tests/store.db " +
 		    "--output=/tmp/tests/html; ")
-        else:
+        elif self.test == "atf":
 	    atf_aux_files = ['/usr/share/xsl/atf/tests-results.xsl',
 			     '/usr/share/xml/atf/tests-results.dtd',
 			     '/usr/share/examples/atf/tests-results.css']
@@ -1574,6 +1575,10 @@ class Anita:
 		"tee /tmp/tests/test.tps | " +
 		"atf-report -o ticker:- -o xml:/tmp/tests/test.xml; " +
                 "(cd /tmp && for f in %s; do cp $f tests/; done;); " % ' '.join(atf_aux_files))
+	elif self.test == "kyua" and not have_kyua:
+            raise RuntimeError("kyua is not installed.")
+        else:
+            raise RuntimeError('unknown testing framework %s' % self.test)
 
         exit_status = self.shell_cmd(
 	    "df -k | sed 's/^/df-pre-test /'; " +
