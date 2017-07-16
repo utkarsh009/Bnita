@@ -8,3 +8,6 @@ Also, Bnita (pronounced Bee-neeta) is my mom's name :)
 1. <del>Adding support for creating an instance of class Bnita in the anita script.</del>
 2. <del>Adding support for running tests.</del>
 3. Add extra features if required.
+
+# Note:
+This is currently a dormant repository, which remains as a proof of concept showing how anita could have been modularised. It isn’t under active development as all the updates are being directly pushed to anita. Development might resume later.
